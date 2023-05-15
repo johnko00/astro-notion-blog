@@ -18,6 +18,7 @@
 
 .post {
   width: calc(25% - 22px);
+  background-color: beige;
   margin: 0 auto 40px;
 }
 .post :global(h3) {
