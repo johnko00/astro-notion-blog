@@ -45,6 +45,7 @@ const [posts, rankedPosts, tags, numberOfPages] = await Promise.all([
       <h2>{page}/{numberOfPages}</h2>
     </header>
 
+  
     {
       posts.length === 0 ? (
         <NoContents contents={posts} />
