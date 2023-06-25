@@ -62,6 +62,25 @@
   background: rgba(253, 235, 236, 1) !important;
 }
 
+/* 一般的なたぐ */
+.tag {
+  font-size: 0.8rem !important;
+  padding: 1px 11px!important;
+  border: 1px solid rgb(33, 176, 176);
+  color: rgb(33, 176, 176) !important;
+  border-radius: 20px !important;
+  background:white !important;
+}
+.tag:hover {
+  padding: 1px 11px!important;
+  border: 1px solid rgb(33, 176, 176);
+  color: white!important;
+  border-radius: 20px !important;
+  background: rgb(33, 176, 176) !important;
+}
+
+
+/* 
 .tag.light-gray {
   color: rgb(28, 56, 41);
   background: rgba(227, 226, 224, 0.5) !important;
@@ -101,4 +120,4 @@
 .tag.red {
   color: rgb(28, 56, 41);
   background: rgb(255, 226, 221) !important;
-}
+} */

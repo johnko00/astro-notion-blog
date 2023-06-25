@@ -14,10 +14,25 @@
 .main{
   display: flex;
   flex-wrap: wrap;
+  column-gap: 50px;
+  row-gap: 80px;
 }
 
-.post {
+/*一覧ページのポスト*/
+.index-post{
   width: calc(25% - 22px);
+  margin: 0 20px;
+}
+
+.index-post img{
+  width: 400px;
+  height: 400px;
+  object-fit: cover;
+}
+
+
+.post {
+  width: 900px;
   background-color: beige;
   margin: 0 auto 40px;
 }
@@ -29,4 +44,16 @@
   margin-top: 0.5rem;
   padding: 0;
   border: 0;
+}
+
+/* <slot name="main" />のCSS */
+.main{
+  background: var(--bg);
+  padding: 2vw;
+}
+
+/* <slot name="aside" />のCSS */
+.aside{
+  background: var(--bg);
+  padding: 2vw;
 }

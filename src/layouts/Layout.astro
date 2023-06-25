@@ -43,7 +43,7 @@ if (database.Icon && database.Icon.Type === 'file') {
   }
 }
 
-const asidePaddingTop = coverImageURL ? '200px' : '60px'
+const asidePaddingTop = coverImageURL ? '20px' : '60px'
 ---
 
 <!DOCTYPE html>
@@ -74,55 +74,45 @@ const asidePaddingTop = coverImageURL ? '200px' : '60px'
   </head>
   <body>
     <GoogleAnalytics trackingId={PUBLIC_GA_TRACKING_ID} />
+
+    <header>
+      <h1>
+        <a href={getNavLink('/')}>
+          {
+            database.Icon && database.Icon.Type === 'emoji' ? (
+              <>
+                <span>{database.Icon.Emoji}</span>
+                {database.Title}
+              </>
+            ) : database.Icon && database.Icon.Type === 'external' ? (
+              <>
+                <img src={database.Icon.Url} />
+                {database.Title}
+              </>
+            ) : database.Icon && database.Icon.Type === 'file' ? (
+              <>
+                <img src={customIconURL} class="custom-icon" />
+                {database.Title}
+              </>
+            ) : (
+              database.Title
+            )
+          }
+        </a>
+      </h1>
+      <div class="description">
+        {database.Description}
+      </div>
+    </header>
+
     <div class="container">
       <main>
-        {
-          coverImageURL && (
-            <div class="cover">
-              <img src={coverImageURL} />
-            </div>
-          )
-        }
-
         <div class="content">
-          <header>
-            <h1>
-              <a href={getNavLink('/')}>
-                {
-                  database.Icon && database.Icon.Type === 'emoji' ? (
-                    <>
-                      <span>{database.Icon.Emoji}</span>
-                      {database.Title}
-                    </>
-                  ) : database.Icon && database.Icon.Type === 'external' ? (
-                    <>
-                      <img src={database.Icon.Url} />
-                      {database.Title}
-                    </>
-                  ) : database.Icon && database.Icon.Type === 'file' ? (
-                    <>
-                      <img src={customIconURL} class="custom-icon" />
-                      {database.Title}
-                    </>
-                  ) : (
-                    database.Title
-                  )
-                }
-              </a>
-            </h1>
-            <div class="description">
-              {database.Description}
-            </div>
-          </header>
-
           <slot name="main" />
-
           <footer>
             <div>
               <span>Powered by</span>
-              <a href="https://github.com/otoyo/astro-notion-blog"
-                >astro-notion-blog</a
-              >
+              <a href="https://github.com/otoyo/astro-notion-blog" >astro-notion-blog</a >
             </div>
           </footer>
         </div>
@@ -152,6 +142,10 @@ const asidePaddingTop = coverImageURL ? '200px' : '60px'
     }
   }
 
+  body{
+    background-color: #f4f4f4;
+  }
+  
   main {
     flex: 1;
     order: 2;
@@ -196,41 +190,42 @@ const asidePaddingTop = coverImageURL ? '200px' : '60px'
     }
   }
 
-  main header {
-    padding: 20px 0 20px;
+  header {
+    padding: 20px 0 0 20px ;
+    margin-left: 20px;
   }
-  main header h1 {
+  header h1 {
     font-weight: 700;
     color: #333;
   }
-  main header h1 a {
+  header h1 a {
     display: block;
     color: inherit;
   }
-  main header h1 a:hover {
+  header h1 a:hover {
     color: inherit;
   }
-  main header h1 a span,
-  main header h1 a img {
+  header h1 a span,
+  header h1 a img {
     display: inline-block;
     font-size: 1.1em;
   }
-  main header h1 a span {
+  header h1 a span {
     margin-right: 0.3em;
     margin-left: -0.1rem;
   }
-  main header h1 a img {
+  header h1 a img {
     width: 1.2em;
     height: 1.2em;
     margin-right: 0.2em;
     margin-left: -0.3rem;
     vertical-align: sub;
   }
-  main header h1 a img.custom-icon {
+  header h1 a img.custom-icon {
     border-radius: var(--radius);
   }
 
-  main header div.description {
+  header div.description {
     padding: 0.3rem 0 0.6rem;
     font-size: 0.95rem;
   }
@@ -269,7 +264,7 @@ const asidePaddingTop = coverImageURL ? '200px' : '60px'
     --geist-foreground: #000;
     --geist-success: #690;
 
-    --radius: 4px;
+    --radius: 20px;
 
     --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto',
       'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans',
@@ -346,10 +341,14 @@ const asidePaddingTop = coverImageURL ? '200px' : '60px'
     font-size: 1.2rem;
     font-weight: normal;
   }
+  
+  /* タグごとのページのタグ名 */
   h2 > span.tag {
     border-radius: 4px;
     padding: 3px 9px;
-    background: rgba(227, 226, 224, 0.5);
+    border: 1px solid #690;
+    border-radius: 5px;
+    background:white;
   }
 
   h3 {

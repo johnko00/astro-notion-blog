@@ -21,7 +21,7 @@ const { heading, tags } = Astro.props
       <ul>
         {tags.map((tag: SelectProperty) => (
           <li>
-            <a href={getTagLink(tag.name)} class={`tag ${tag.color}`}>
+            <a href={getTagLink(tag.name)} class={`tag ${tag}`}>
               {tag.name}
             </a>
           </li>
@@ -50,7 +50,7 @@ const { heading, tags } = Astro.props
     display:inline-block;
     position: relative;
     font-size: 1rem;
-    padding: 0.4rem;
+    padding: 0 0.2rem;
     line-height: 1.2rem;
 
     font-size: 0.9rem;
