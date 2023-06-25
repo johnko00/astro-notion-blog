@@ -43,23 +43,22 @@ const currentTag = posts[0].Tags.find((t) => t.name === tag)
     <header>
       <h2><span class={`tag ${currentTag}`}>{tag}</span></h2>
     </header>
+    <section>
 
-    {
-      posts.length === 0 ? (
-        <NoContents contents={posts} />
-      ) : (
-        posts.map((post) => (
-          <div class={styles.post} key={post.Slug}>
-            <PostDate post={post} />
-            <PostTags post={post} />
-            <PostTitle post={post} />
-            <PostFeaturedImage post={post} />
-            <PostExcerpt post={post} />
-            <ReadMoreLink post={post} />
-          </div>
-        ))
-      )
-    }
+      {
+        posts.length === 0 ? (
+          <NoContents contents={posts} />
+        ) : (
+          posts.map((post) => (
+          <div class={styles.indexpost} key={post.Slug}>
+                <PostFeaturedImage post={post} />
+                <PostTitle post={post} />
+                <PostTags post={post} />
+              </div>
+          ))
+        )
+      }
+    </section>
 
     <footer>
       <Pagination tag={tag} currentPage={1} numberOfPages={numberOfPages} />
