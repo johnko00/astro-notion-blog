@@ -33,17 +33,20 @@ if (post.FeaturedImage && post.FeaturedImage.Url) {
   }
   .post-featured-image img {
     display: block;
-    width: 400px;
-    height: 400px;
+    width: 350px;
+    height: 350px;
     object-fit:contain ;
     border: solid 0.5px;
     border-radius: 10px;
     background-color: #f6f6f661;
     position:relative;
-  top:0;
+    top:0;
+    left: 0;
+    transition: all .3s;
   }
   .post-featured-image img:hover {
-    top:-3px;
-    box-shadow: 4px 4px black;
+    top:-6px;
+    left: -6px;
+    box-shadow: 6px 6px black;
   }
 </style>

@@ -34,16 +34,21 @@ const { prevPost, nextPost } = Astro.props
       )
     }
   </div>
-  <div>
+  <!-- <div>
     <a href={getNavLink('/')} class="text">↑Top</a>
-  </div>
+  </div> -->
 </div>
 
 <style>
   div.post-relative-link {
-    margin-top: 1rem;
+    display: flex;
+    justify-content: space-between;
+    margin-top: 3rem;
+    padding-top: 20px;
+    border-top: 0.5px solid #6e6e6e61;
   }
   div.post-relative-link > div {
+    width: 45%;
     display: block;
     margin-top: 0.6rem;
   }

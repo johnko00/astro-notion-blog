@@ -101,11 +101,14 @@ if (post.FeaturedImage && post.FeaturedImage.Url) {
 >
   <div slot="main" class={styles.main}>
     <div class={styles.post}>
-      <PostDate post={post} />
-      <PostTags post={post} />
+      <div class = {styles.detail}>
+        <PostDate post={post} />
+        <PostTags post={post} />
+      </div>
+
       <PostTitle post={post} enableLink={false} />
       <PostBody blocks={blocks} />
-      <PostTags post={post} />
+      <!-- <PostTags post={post} /> -->
 
       <footer>
         <PostRelativeLink prevPost={prevPost} nextPost={nextPost} />
@@ -113,15 +116,15 @@ if (post.FeaturedImage && post.FeaturedImage.Url) {
     </div>
   </div>
 
-  <div slot="aside" class="aside">
+  <div slot="aside" class={styles.aside}>
     <BlogPostsLink
-      heading="Posts in the same category"
+      heading="同カテゴリー"
       posts={postsHavingSameTag.filter(
         (p: interfaces.Post) => p.Slug !== post.Slug
       )}
     />
-    <BlogPostsLink heading="Recommended" posts={rankedPosts} />
-    <BlogPostsLink heading="Latest posts" posts={recentPosts} />
+    <!-- <BlogPostsLink heading="Recommended" posts={rankedPosts} />
+    <BlogPostsLink heading="Latest posts" posts={recentPosts} /> -->
     <BlogTagsLink heading="Categories" tags={tags} />
   </div>
 </Layout>

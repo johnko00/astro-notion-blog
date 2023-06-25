@@ -29,20 +29,21 @@ const [posts, rankedPosts, tags, numberOfPages] = await Promise.all([
 
 <Layout>
   <div slot="main" class={styles.main}>
-    {
-      posts.length === 0 ? (
-        <NoContents contents={posts} />
-      ) : (
-        posts.map((post) => (
-          <div class={styles.index-post} key={post.Slug}>
-            <PostFeaturedImage post={post} />
-            <PostTitle post={post} />
-            <PostTags post={post} />
-          </div>
-        ))
-      )
-    }
-
+    <section>
+      {
+        posts.length === 0 ? (
+          <NoContents contents={posts} />
+        ) : (
+          posts.map((post) => (
+            <div class={styles.indexpost} key={post.Slug}>
+              <PostFeaturedImage post={post} />
+              <PostTitle post={post} />
+              <PostTags post={post} />
+            </div>
+          ))
+        )
+      }
+    </section>
     <footer>
       <Pagination currentPage={1} numberOfPages={numberOfPages} />
     </footer>
