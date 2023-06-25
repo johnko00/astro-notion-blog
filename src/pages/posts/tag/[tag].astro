@@ -41,7 +41,7 @@ const currentTag = posts[0].Tags.find((t) => t.name === tag)
 <Layout title={`Posts in ${tag}`} path={`/posts/tag/${tag}`}>
   <div slot="main" class={styles.main}>
     <header>
-      <h2><span class={`tag ${currentTag.color}`}>{tag}</span></h2>
+      <h2><span class={`tag ${currentTag}`}>{tag}</span></h2>
     </header>
 
     {
