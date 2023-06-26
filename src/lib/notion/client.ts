@@ -847,12 +847,19 @@ function _buildPost(pageObject: responses.PageObject): Post {
   if (
     prop.FeaturedImage.files &&
     prop.FeaturedImage.files.length > 0 &&
-    prop.FeaturedImage.files[0].file
+    (prop.FeaturedImage.files[0].file || prop.FeaturedImage.files[0].external)
   ) {
+    if(prop.FeaturedImage.files[0].type === 'external'){
+      featuredImage = {
+        Type: prop.FeaturedImage.type,
+        Url: prop.FeaturedImage.files[0].external?.url || '',
+      }
+    } else {
     featuredImage = {
-      Type: prop.FeaturedImage.type,
-      Url: prop.FeaturedImage.files[0].file.url,
-      ExpiryTime: prop.FeaturedImage.files[0].file.expiry_time,
+        Type: prop.FeaturedImage.type,
+        Url: prop.FeaturedImage.files[0].file.url,
+        ExpiryTime: prop.FeaturedImage.files[0].file.expiry_time,
+      }
     }
   }
 

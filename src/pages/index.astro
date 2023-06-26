@@ -51,9 +51,6 @@ const [posts, rankedPosts, tags, numberOfPages] = await Promise.all([
 
   <div slot="aside" class={styles.aside}>
     <!-- <BlogPostsLink heading="Recommended" posts={rankedPosts} /> -->
-    <script async src="https://cse.google.com/cse.js?cx=c7d20881aa77f41a0">
-    </script>
-    <div class="gcse-search"></div>
     <BlogTagsLink heading="Categories" tags={tags} />
   </div>
 </Layout>

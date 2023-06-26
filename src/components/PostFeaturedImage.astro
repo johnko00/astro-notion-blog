@@ -12,16 +12,15 @@ const { post } = Astro.props
 let image = ''
 if (post.FeaturedImage && post.FeaturedImage.Url) {
   const imageUrl = post.FeaturedImage.Url;
-  if (imageUrl.includes('gyazo')) {
-    image = imageUrl;
+  if (import.meta.env.DEV) {
+    image = post.FeaturedImage.Url
   } else {
     image = filePath(new URL(imageUrl))
   }
 }
 
 
-// } else if (import.meta.env.DEV) {
-//     image = post.FeaturedImage.Url
+
 ---
 
 {
