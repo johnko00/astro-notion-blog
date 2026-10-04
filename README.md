@@ -41,12 +41,16 @@ astro-notion-blog enables you to create a blog using [Notion](https://www.notion
 
 1. If you enjoy using this repo, **don't forget to give it a star!** :wink:
    - This is very motivating!
-2. Simply duplicate [the blog template](https://otoyo.notion.site/e2c5fa2e8660452988d6137ba57fd974?v=abe305cd8b3d467285e91a2a85f4d8de) into your Notion workspace.
-3. Once you've duplicated the page (database), customize it to your liking by changing the icon, title, and description.
+2. Create a Blog DB in Notion with only these properties:
+   - `タイトル`: Title
+   - `Status`: Status, with the options `下書き` and `公開`
+   - `公開日`: Date
+   - `カテゴリ`: Select, with the options `読んだもの`, `観たもの`, `作ったもの`, and `雑記`
+   - Write the article body in the Notion page body.
+   - Slug, Excerpt, Tags, Rank, and FeaturedImage properties are not needed.
+3. Customize the database icon, title, and description if desired.
 
-<img src="https://user-images.githubusercontent.com/1063435/223611374-86d7172c-9cda-477b-b8a3-dc724fa7ccf4.png" width="600">
-
-4. For future reference, identify the `DATABASE_ID` by noting the portion of the duplicated page (database) URL that appears as https://notion.so/your-account/<HERE>?v=xxxx.
+4. For future reference, identify the `DATABASE_ID` by noting the portion of the database URL that appears as https://notion.so/your-account/<HERE>?v=xxxx.
 
 <img src="https://user-images.githubusercontent.com/1063435/213966685-3a2afed2-45c0-4ea5-8070-e634d8d648de.png" width="260">
 

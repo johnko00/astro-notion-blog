@@ -1,0 +1,47 @@
+---
+import type { Post } from '../lib/interfaces.ts'
+import { getCategoryLink } from '../lib/blog-helpers.ts'
+import '../styles/notion-color.css'
+
+export interface Props {
+  post: Post
+  enableLink: boolean
+}
+
+const { post, enableLink = true } = Astro.props
+const category = post.Category
+---
+
+<div class="post-category">
+  {
+    category &&
+      (enableLink ? (
+        <a href={getCategoryLink(category.name)} class={`tag ${category.color}`}>
+          {category.name}
+        </a>
+      ) : (
+        <span class={`tag ${category.color}`}>{category.name}</span>
+      ))
+  }
+</div>
+
+<style>
+  .post-category {
+    font-size: 0.9rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+  .post-category a,
+  .post-category span {
+    display: flex;
+    align-items: center;
+    flex-shrink: 1;
+    min-width: 0;
+    border-radius: 3px;
+    padding: 2px 6px;
+    line-height: 1.2;
+    color: var(--fg);
+    background: var(--category-bg);
+  }
+</style>

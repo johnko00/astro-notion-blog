@@ -1,7 +1,9 @@
 ---
+import { NUMBER_OF_POSTS_PER_PAGE } from '../../../server-constants.ts'
 import {
-  getPostsByPage,
-  getNumberOfPages,
+  getPostsByCategory,
+  getAllCategories,
+  getNumberOfPagesByCategory,
 } from '../../../lib/notion/client.ts'
 import Layout from '../../../layouts/Layout.astro'
 import NoContents from '../../../components/NoContents.astro'
@@ -10,28 +12,27 @@ import Pagination from '../../../components/Pagination.astro'
 import styles from '../../../styles/blog.module.css'
 
 export async function getStaticPaths() {
-  const numberOfPages = await getNumberOfPages()
+  const categories = await getAllCategories()
 
-  let params = []
-  for (let i = 2; i <= numberOfPages; i++) {
-    params.push({ params: { page: i.toString() } })
-  }
-  return params
+  return categories.map((category) => ({
+    params: { category: category.name },
+  }))
 }
 
-const { page } = Astro.params
+const { category } = Astro.params
 
 const [posts, numberOfPages] = await Promise.all([
-  getPostsByPage(parseInt(page, 10)),
-  getNumberOfPages(),
+  getPostsByCategory(category, NUMBER_OF_POSTS_PER_PAGE),
+  getNumberOfPagesByCategory(category),
 ])
+
 ---
 
-<Layout title={`Posts ${page}/${numberOfPages}`} path={`/posts/page/${page}`}>
+<Layout title={`Posts in ${category}`} path={`/posts/category/${category}`}>
   <div slot="main" class={styles.archive}>
     <header class={styles['archive-header']}>
-      <p class={styles['archive-kicker']}>Blog · {page}/{numberOfPages}</p>
-      <h1>記事一覧</h1>
+      <p class={styles['archive-kicker']}>Category</p>
+      <h1>{category}</h1>
     </header>
 
     {
@@ -51,10 +52,7 @@ const [posts, numberOfPages] = await Promise.all([
 
     {numberOfPages > 1 && (
       <footer>
-        <Pagination
-          currentPage={parseInt(page, 10)}
-          numberOfPages={numberOfPages}
-        />
+        <Pagination category={category} currentPage={1} numberOfPages={numberOfPages} />
       </footer>
     )}
   </div>

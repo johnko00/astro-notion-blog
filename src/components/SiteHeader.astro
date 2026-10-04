@@ -1,0 +1,143 @@
+---
+import type { Database } from '../lib/interfaces.ts'
+import { getNavLink } from '../lib/blog-helpers.ts'
+import { SITE_NAME, SITE_NAV_ITEMS } from '../lib/site-config.ts'
+import SearchButton from './SearchButton.astro'
+
+export interface Props {
+  database: Database
+  customIconURL?: string
+}
+
+const { database, customIconURL = '' } = Astro.props
+const homePath = getNavLink('/')
+const currentPath = Astro.url.pathname
+---
+
+<header class="site-header">
+  <a class="site-brand" href={homePath} aria-label={`${SITE_NAME} Home`}>
+    {
+      database.Icon && database.Icon.Type === 'emoji' ? (
+        <span class="site-brand-icon" aria-hidden="true">{database.Icon.Emoji}</span>
+      ) : database.Icon && database.Icon.Type === 'external' ? (
+        <img src={database.Icon.Url} alt="" class="site-brand-icon" />
+      ) : database.Icon && database.Icon.Type === 'file' ? (
+        <img src={customIconURL} alt="" class="site-brand-icon" />
+      ) : null
+    }
+    <span>{SITE_NAME}</span>
+  </a>
+
+  <nav class="site-nav" aria-label="Main navigation">
+    {
+      SITE_NAV_ITEMS.map((item) => {
+        const href = getNavLink(item.href)
+        const isCurrent = item.enabled && currentPath === href
+
+        return item.enabled ? (
+          <a href={href} aria-current={isCurrent ? 'page' : undefined}>
+            {item.label}
+          </a>
+        ) : (
+          <span class="site-nav-disabled" aria-disabled="true" title="準備中">
+            {item.label}
+          </span>
+        )
+      })
+    }
+    <SearchButton iconOnly />
+  </nav>
+</header>
+
+<style>
+  .site-header {
+    display: none;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1.5rem;
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 1.25rem 2.5rem;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .site-brand {
+    display: inline-flex;
+    min-width: 0;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--fg);
+    font-family: var(--font-sans);
+    font-size: 1.25rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    white-space: nowrap;
+  }
+
+  .site-brand:hover {
+    color: var(--fg);
+  }
+
+  .site-brand-icon {
+    display: block;
+    width: 1.55rem;
+    height: 1.55rem;
+    object-fit: cover;
+    border-radius: 6px;
+    font-size: 1.35rem;
+    line-height: 1.55rem;
+  }
+
+  .site-nav {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+  }
+
+  .site-nav a,
+  .site-nav-disabled {
+    display: inline-flex;
+    min-height: 2.25rem;
+    align-items: center;
+    border-radius: 999px;
+    padding: 0.4rem 0.7rem;
+    color: var(--muted);
+    font-size: 0.9rem;
+    line-height: 1;
+    transition: background-color 160ms ease, color 160ms ease;
+  }
+
+  .site-nav a:hover,
+  .site-nav a[aria-current='page'] {
+    color: var(--fg);
+    background: var(--surface-muted);
+  }
+
+  .site-nav-disabled {
+    cursor: default;
+    color: var(--muted-light);
+  }
+
+  @media (max-width: 760px) {
+    .site-header {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      padding: 1rem 1.1rem 0.8rem;
+    }
+
+    .site-nav {
+      width: 100%;
+      justify-content: flex-end;
+      padding-top: 0.65rem;
+      border-top: 1px dashed var(--border);
+    }
+
+    .site-nav a,
+    .site-nav-disabled {
+      min-height: 2rem;
+      padding: 0.35rem 0.55rem;
+      font-size: 0.82rem;
+    }
+  }
+</style>

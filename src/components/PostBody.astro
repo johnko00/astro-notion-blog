@@ -15,6 +15,25 @@ const { blocks } = Astro.props
 
 <style>
   .post-body {
-    padding: 0.5rem 0;
+    max-width: 760px;
+    margin: 0 auto;
+    padding: 0.9rem 0 0.5rem;
+  }
+
+  .post-body :global(img),
+  .post-body :global(video),
+  .post-body :global(iframe) {
+    max-width: 100%;
+  }
+
+  .post-body :global(pre) {
+    max-width: 100%;
+    overflow-x: auto;
+  }
+
+  @media (max-width: 640px) {
+    .post-body {
+      padding-top: 0.65rem;
+    }
   }
 </style>

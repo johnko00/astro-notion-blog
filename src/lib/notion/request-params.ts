@@ -28,6 +28,7 @@ export interface PropertyFilterObject {
   property: string
 
   checkbox?: CheckboxFilterCondition
+  status?: StatusFilterCondition
 
   date?: DateFilterCondition
   created_time?: DateFilterCondition
@@ -42,6 +43,13 @@ export interface CompoundFilterObject {
 export interface CheckboxFilterCondition {
   equals?: boolean
   does_not_equal?: boolean
+}
+
+export interface StatusFilterCondition {
+  equals?: string
+  does_not_equal?: string
+  is_empty?: boolean
+  is_not_empty?: boolean
 }
 
 export interface DateFilterCondition {

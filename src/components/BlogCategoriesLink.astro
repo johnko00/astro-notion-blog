@@ -1,28 +1,31 @@
 ---
 import type { SelectProperty } from '../lib/interfaces.ts'
-import { getTagLink } from '../lib/blog-helpers.ts'
+import { getCategoryLink } from '../lib/blog-helpers.ts'
 import NoContents from './NoContents.astro'
 import '../styles/notion-color.css'
 
 export interface Props {
   heading: string
-  tags: SelectProperty[]
+  categories: SelectProperty[]
 }
 
-const { heading, tags } = Astro.props
+const { heading, categories } = Astro.props
 ---
 
-<div class="blog-tags-link">
+<div class="blog-categories-link">
   <h2>{heading}</h2>
   {
-    tags.length === 0 ? (
-      <NoContents contents={tags} />
+    categories.length === 0 ? (
+      <NoContents contents={categories} />
     ) : (
       <ul>
-        {tags.map((tag: SelectProperty) => (
+        {categories.map((category: SelectProperty) => (
           <li>
-            <a href={getTagLink(tag.name)} class={`tag ${tag.color}`}>
-              {tag.name}
+            <a
+              href={getCategoryLink(category.name)}
+              class={`tag ${category.color}`}
+            >
+              {category.name}
             </a>
           </li>
         ))}
@@ -32,33 +35,33 @@ const { heading, tags } = Astro.props
 </div>
 
 <style>
-  .blog-tags-link {
-  }
-  .blog-tags-link h2 {
+  .blog-categories-link h2 {
     margin: 0;
     padding-left: 0.4rem;
-    color: #777;
+    color: var(--muted);
+    font-family: var(--font-sans);
     font-size: 0.95rem;
+    font-weight: 600;
   }
-  .blog-tags-link ul {
+  .blog-categories-link ul {
     list-style-type: none;
     padding: 0;
     margin-top: 0.3rem;
     margin-block-end: 1rem;
   }
-  .blog-tags-link ul li {
+  .blog-categories-link ul li {
     position: relative;
     padding: 0.4rem;
     line-height: 1.2rem;
     font-size: 0.9rem;
     gap: 6px;
   }
-  .blog-tags-link ul li a {
+  .blog-categories-link ul li a {
     min-width: 0;
     border-radius: 3px;
     padding: 2px 6px;
     line-height: 1.2;
     color: rgb(50, 48, 44);
-    background: rgba(227, 226, 224, 0.5);
+    background: var(--category-bg);
   }
 </style>

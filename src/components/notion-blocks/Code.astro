@@ -81,33 +81,38 @@ const grammer =
     margin-bottom: 0.6rem;
   }
   .code > div {
-    background: rgb(247, 246, 243);
+    overflow: hidden;
+    border: 1px solid var(--border);
     border-radius: var(--radius);
+    background: #ebe8df;
   }
   .code > div div {
     display: flex;
     justify-content: flex-end;
+    padding: 0.35rem 0.55rem 0;
   }
   .code button.copy {
     display: block;
     width: 4rem;
-    border: 0;
+    border: 1px solid var(--border);
     border-radius: var(--radius);
-    background-color: rgba(227, 226, 224, 0.5);
+    padding: 0.2rem 0.4rem;
+    background-color: rgba(252, 251, 247, 0.7);
     color: var(--fg);
+    font-size: 0.75rem;
     line-height: 1.2rem;
     cursor: pointer;
   }
   .code pre {
     display: block;
     overflow: auto;
-    padding: 0.8rem 2rem 2rem;
+    width: 100%;
+    min-width: 0;
+    margin: 0;
+    padding: 0.85rem 1rem 1rem;
     font-size: 0.9rem;
-    line-height: 1.2rem;
+    line-height: 1.6;
     white-space: pre;
-    width: 100px;
-    min-width: 100%;
-    overflow-x: auto;
     &::-webkit-scrollbar {
       height: 10px;
     }
@@ -123,8 +128,9 @@ const grammer =
   }
   .code pre code {
     color: var(--fg);
+    font-family: var(--font-mono);
     padding: 0;
-    background: rgb(247, 246, 243) !important;
+    background: transparent !important;
     border-radius: 0;
   }
 </style>

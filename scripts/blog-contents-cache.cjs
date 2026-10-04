@@ -29,13 +29,13 @@ const getAllPages = async () => {
     filter: {
       and: [
         {
-          property: 'Published',
-          checkbox: {
-            equals: true,
+          property: 'Status',
+          status: {
+            equals: '公開',
           },
         },
         {
-          property: 'Date',
+          property: '公開日',
           date: {
             on_or_before: new Date().toISOString(),
           },
@@ -61,9 +61,6 @@ const getAllPages = async () => {
     return {
       id: result.id,
       last_edited_time: result.last_edited_time,
-      slug: result.properties.Slug.rich_text
-        ? result.properties.Slug.rich_text[0].plain_text
-        : '',
     };
   });
 

@@ -9,13 +9,12 @@ export interface Post {
   PageId: string
   Title: string
   Icon: FileObject | Emoji | null
-  Cover: FileObject | null
+  /** Derived from Title and PageId. It is not a Notion property. */
   Slug: string
   Date: string
-  Tags: SelectProperty[]
-  Excerpt: string
-  FeaturedImage: FileObject | null
-  Rank: number
+  Category: SelectProperty | null
+  Summary: string
+  RepresentativeImage: FileObject | null
 }
 
 export interface Block {

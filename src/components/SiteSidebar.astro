@@ -1,0 +1,211 @@
+---
+import type { Database, SelectProperty } from '../lib/interfaces.ts'
+import { getCategoryLink, getNavLink } from '../lib/blog-helpers.ts'
+import { SITE_NAME, SITE_NAV_ITEMS } from '../lib/site-config.ts'
+import SearchButton from './SearchButton.astro'
+
+export interface Props {
+  database: Database
+  customIconURL?: string
+  categories: SelectProperty[]
+}
+
+const { database, customIconURL = '', categories } = Astro.props
+const homePath = getNavLink('/')
+const currentPath = Astro.url.pathname
+const isBlogSection = currentPath === homePath || currentPath.startsWith('/posts')
+const secondaryNavItems = SITE_NAV_ITEMS.filter((item) => item.label !== 'Home')
+---
+
+<aside class="site-sidebar" aria-label="Site navigation">
+  <div class="site-sidebar-inner">
+    <a class="site-sidebar-brand" href={homePath} aria-label={`${SITE_NAME} Home`}>
+      {
+        database.Icon && database.Icon.Type === 'emoji' ? (
+          <span class="site-sidebar-brand-icon" aria-hidden="true">{database.Icon.Emoji}</span>
+        ) : database.Icon && database.Icon.Type === 'external' ? (
+          <img src={database.Icon.Url} alt="" class="site-sidebar-brand-icon" />
+        ) : database.Icon && database.Icon.Type === 'file' ? (
+          <img src={customIconURL} alt="" class="site-sidebar-brand-icon" />
+        ) : null
+      }
+      <span>{SITE_NAME}</span>
+    </a>
+
+    <nav class="site-sidebar-nav" aria-label="Main navigation">
+      <a
+        class="site-sidebar-nav-item"
+        href={homePath}
+        aria-current={currentPath === homePath ? 'page' : undefined}
+      >Home</a>
+
+      <div class="site-sidebar-blog">
+        <span
+          class="site-sidebar-nav-item site-sidebar-section-label"
+          aria-current={isBlogSection ? 'page' : undefined}
+        >Blog</span>
+        {
+          categories.length > 0 && (
+            <ul class="site-sidebar-categories">
+              {categories.map((category) => (
+                <li>
+                  <a
+                    class="site-sidebar-category"
+                    href={getCategoryLink(category.name)}
+                  >
+                    {category.name}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          )
+        }
+      </div>
+
+      {
+        secondaryNavItems.map((item) => (
+          item.enabled ? (
+            <a class="site-sidebar-nav-item" href={getNavLink(item.href)}>
+              {item.label}
+            </a>
+          ) : (
+            <span class="site-sidebar-nav-item site-sidebar-nav-disabled" aria-disabled="true">
+              {item.label}
+            </span>
+          )
+        ))
+      }
+    </nav>
+
+    <div class="site-sidebar-search">
+      <SearchButton />
+    </div>
+  </div>
+</aside>
+
+<style>
+  .site-sidebar {
+    align-self: stretch;
+    min-width: 0;
+    border: 0;
+    box-shadow: none;
+    outline: 0;
+  }
+
+  .site-sidebar-inner {
+    position: sticky;
+    top: 0;
+    display: flex;
+    min-height: 100vh;
+    flex-direction: column;
+    padding: 2.5rem 0 2rem;
+  }
+
+  .site-sidebar-brand {
+    display: inline-flex;
+    width: fit-content;
+    max-width: 100%;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--fg);
+    font-size: 1.15rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    white-space: nowrap;
+  }
+
+  .site-sidebar-brand:hover {
+    color: var(--fg);
+  }
+
+  .site-sidebar-brand-icon {
+    display: block;
+    width: 1.4rem;
+    height: 1.4rem;
+    border-radius: 5px;
+    object-fit: cover;
+    font-size: 1.2rem;
+    line-height: 1.4rem;
+  }
+
+  .site-sidebar-nav {
+    display: flex;
+    margin-top: 2.2rem;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.1rem;
+  }
+
+  .site-sidebar-nav-item {
+    display: block;
+    width: 100%;
+    padding: 0.2rem 0;
+    color: var(--muted);
+    font-size: 0.9rem;
+    line-height: 1.5;
+  }
+
+  a.site-sidebar-nav-item:hover,
+  a.site-sidebar-nav-item[aria-current='page'],
+  .site-sidebar-section-label[aria-current='page'] {
+    color: var(--fg);
+  }
+
+  .site-sidebar-section-label {
+    color: var(--fg);
+    font-weight: 500;
+  }
+
+  .site-sidebar-blog {
+    width: 100%;
+    margin: 0.15rem 0 0.35rem;
+  }
+
+  .site-sidebar-categories {
+    display: flex;
+    margin: 0.1rem 0 0.25rem;
+    padding: 0 0 0 0.6rem;
+    flex-direction: column;
+    gap: 0.08rem;
+    list-style: none;
+  }
+
+  .site-sidebar-category {
+    display: inline-block;
+    padding: 0.12rem 0;
+    color: var(--muted);
+    font-size: 0.78rem;
+    line-height: 1.4;
+  }
+
+  .site-sidebar-category:hover {
+    color: var(--fg);
+  }
+
+  .site-sidebar-nav-disabled {
+    color: var(--muted-light);
+  }
+
+  .site-sidebar-search {
+    margin-top: 0.65rem;
+    padding-top: 0.35rem;
+  }
+
+  .site-sidebar-search :global(.search-button) {
+    padding-left: 0;
+    font-size: 0.82rem;
+    font-weight: 400;
+  }
+
+  @media (max-width: 900px) {
+    .site-sidebar-inner {
+      padding-right: 0;
+    }
+  }
+
+  @media (max-width: 760px) {
+    .site-sidebar {
+      display: none;
+    }
+  }
+</style>

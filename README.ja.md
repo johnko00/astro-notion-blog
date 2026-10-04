@@ -41,12 +41,16 @@ astro-notion-blog を使えば [Notion](https://www.notion.so) で書けるブ�
 
 1. このリポジトリを**スターします** :wink:
    - スターしていただけると開発の励みになります
-2. [ブログテンプレート](https://otoyo.notion.site/e2c5fa2e8660452988d6137ba57fd974?v=abe305cd8b3d467285e91a2a85f4d8de) を自分の Notion へ複製します
-3. 複製したページ(データベース)のアイコン、タイトル、説明を変更します
+2. NotionでBlog DBを作成します。プロパティは次の4つだけを作成してください
+   - `タイトル`：タイトル（Title）
+   - `Status`：ステータス（Status）。選択肢は `下書き` と `公開`
+   - `公開日`：公開日（Date）
+   - `カテゴリ`：カテゴリ（Select）。選択肢は `読んだもの`、`観たもの`、`作ったもの`、`雑記`
+   - 記事本文はNotionページ本文に記述します
+   - Slug、Excerpt、Tags、Rank、FeaturedImageなどの追加プロパティは不要です
+3. 作成したデータベースのアイコン、タイトル、説明を必要に応じて変更します
 
-<img src="https://user-images.githubusercontent.com/1063435/223611473-09e87aba-ad3b-4380-a74f-58c3c5804c39.png" width="600">
-
-4. 複製したページ(データベース)の URL `https://notion.so/your-account/<ここ>?v=xxxx` を `DATABASE_ID` としてメモします
+4. 作成したデータベースの URL `https://notion.so/your-account/<ここ>?v=xxxx` を `DATABASE_ID` としてメモします
 
 <img src="https://user-images.githubusercontent.com/1063435/213966685-3a2afed2-45c0-4ea5-8070-e634d8d648de.png" width="260">
 

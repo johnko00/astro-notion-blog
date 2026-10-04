@@ -1,0 +1,79 @@
+---
+import type { SelectProperty } from '../lib/interfaces.ts'
+import { getCategoryLink } from '../lib/blog-helpers.ts'
+import '../styles/notion-color.css'
+
+export interface Props {
+  categories: SelectProperty[]
+}
+
+const { categories } = Astro.props
+---
+
+<section class="category-directory" aria-labelledby="category-directory-title">
+  <div class="section-heading">
+    <h2 id="category-directory-title">Categories</h2>
+  </div>
+  <div class="category-directory-list">
+    {
+      categories.map((category: SelectProperty) => {
+        return (
+          <a
+            class={`category-directory-item tag ${category.color || 'default'}`}
+            href={getCategoryLink(category.name)}
+          >
+            {category.name}
+          </a>
+        )
+      })
+    }
+  </div>
+</section>
+
+<style>
+  .category-directory {
+    padding: 2.15rem 0 0;
+  }
+
+  h2 {
+    margin: 0;
+    font-family: var(--font-sans);
+    color: var(--muted);
+    font-size: 0.78rem;
+    font-weight: 500;
+    letter-spacing: 0.12em;
+    line-height: 1.4;
+  }
+
+  .section-heading {
+    margin-bottom: 0.75rem;
+  }
+
+  .category-directory-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.45rem;
+  }
+
+  .category-directory-item {
+    display: inline-flex;
+    min-height: 1.9rem;
+    align-items: center;
+    border: 1px solid transparent;
+    border-radius: 5px;
+    padding: 0.3rem 0.6rem;
+    color: var(--fg);
+    background: var(--category-bg);
+    font-size: 0.78rem;
+    line-height: 1.3;
+    transition: transform 160ms ease, border-color 160ms ease,
+      background-color 160ms ease;
+  }
+
+  .category-directory-item:hover {
+    border-color: var(--border-strong);
+    color: var(--fg);
+    transform: translateY(-1px);
+  }
+
+</style>

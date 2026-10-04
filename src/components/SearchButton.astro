@@ -1,29 +1,47 @@
 ---
 import { Icon } from 'astro-icon/components';
+
+export interface Props {
+  iconOnly?: boolean
+}
+
+const { iconOnly = false } = Astro.props
 ---
 
-<button class="search-button open-search-modal" type="button"><Icon name="octicon:search-24" /><span>Search</span></button>
+<button
+  class:list={['search-button', 'open-search-modal', { 'icon-only': iconOnly }]}
+  type="button"
+  aria-label="検索"
+  title="検索"
+>
+  <Icon name="octicon:search-24" />
+  {!iconOnly && <span>Search</span>}
+</button>
 
 <style>
   .search-button {
     display: flex;
-    width: 100%;
+    width: fit-content;
+    align-items: center;
     background-color: transparent;
-    margin-bottom: 0.5rem;
     border: none;
-    border-radius: var(--radius);
+    border-radius: 999px;
     padding: 0.4rem 0.4rem;
-    color: #777;
+    color: var(--muted);
     font-size: 0.95rem;
     font-weight: bold;
   }
   .search-button:hover {
     cursor: pointer;
-    background-color: #ddd;
+    background-color: var(--surface-muted);
+    color: var(--fg);
   }
   .search-button svg {
     width: 20px;
     height: 20px;
+  }
+
+  .search-button:not(.icon-only) svg {
     margin-right: 0.2rem;
   }
   [astro-icon="octicon:search-24"] {

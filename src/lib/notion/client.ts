@@ -11,6 +11,11 @@ import {
   NUMBER_OF_POSTS_PER_PAGE,
   REQUEST_TIMEOUT_MS,
 } from '../../server-constants'
+import {
+  getPostSlug,
+  getPostSummary,
+  getRepresentativeImage,
+} from '../post-metadata'
 import type {
   Annotation,
   Block,
@@ -60,14 +65,74 @@ const client = new Client({
 })
 
 let postsCache: Post[] | null = null
+let postsLoadPromise: Promise<Post[]> | null = null
 let dbCache: Database | null = null
+const blocksCache = new Map<string, Block[]>()
 
 const numberOfRetry = 2
 
+const isExpiredFileObject = (
+  fileObject: FileObject | null | undefined
+): boolean => {
+  if (!fileObject?.ExpiryTime) {
+    return false
+  }
+
+  const expiryTime = Date.parse(fileObject.ExpiryTime)
+  return Number.isFinite(expiryTime) && expiryTime <= Date.now()
+}
+
+const getBlockFileObject = (block: Block): FileObject | null =>
+  block.Image?.File || block.File?.File || null
+
+const refreshExpiredFileBlocks = async (blocks: Block[]): Promise<Block[]> => {
+  let refreshed = false
+
+  const nextBlocks = await Promise.all(
+    blocks.map(async (block) => {
+      if (!isExpiredFileObject(getBlockFileObject(block))) {
+        return block
+      }
+
+      try {
+        refreshed = true
+        return await getBlock(block.Id)
+      } catch {
+        return block
+      }
+    })
+  )
+
+  return refreshed ? nextBlocks : blocks
+}
+
 export async function getAllPosts(): Promise<Post[]> {
   if (postsCache !== null) {
-    return Promise.resolve(postsCache)
+    if (
+      !postsCache.some((post) =>
+        isExpiredFileObject(post.RepresentativeImage)
+      )
+    ) {
+      return Promise.resolve(postsCache)
+    }
+
+    postsCache = null
   }
+
+  if (postsLoadPromise !== null) {
+    return postsLoadPromise
+  }
+
+  postsLoadPromise = loadAllPosts()
+  try {
+    postsCache = await postsLoadPromise
+    return postsCache
+  } finally {
+    postsLoadPromise = null
+  }
+}
+
+async function loadAllPosts(): Promise<Post[]> {
 
   const dbResponse = (await client.databases.retrieve({
     database_id: DATABASE_ID,
@@ -92,13 +157,13 @@ export async function getAllPosts(): Promise<Post[]> {
     filter: {
       and: [
         {
-          property: 'Published',
-          checkbox: {
-            equals: true,
+          property: 'Status',
+          status: {
+            equals: '公開',
           },
         },
         {
-          property: 'Date',
+          property: '公開日',
           date: {
             on_or_before: new Date().toISOString(),
           },
@@ -107,7 +172,7 @@ export async function getAllPosts(): Promise<Post[]> {
     },
     sorts: [
       {
-        property: 'Date',
+        property: '公開日',
         direction: 'descending',
       },
     ],
@@ -145,30 +210,18 @@ export async function getAllPosts(): Promise<Post[]> {
     params['start_cursor'] = res.next_cursor as string
   }
 
-  postsCache = results
-    .filter((pageObject) => _validPageObject(pageObject))
-    .map((pageObject) => _buildPost(pageObject))
-  return postsCache
+  const validPages = results.filter((pageObject) => _validPageObject(pageObject))
+  const posts: Post[] = []
+  for (const pageObject of validPages) {
+    const blocks = await getAllBlocksByBlockId(pageObject.id)
+    posts.push(_buildPost(pageObject, blocks))
+  }
+  return posts
 }
 
 export async function getPosts(pageSize = 10): Promise<Post[]> {
   const allPosts = await getAllPosts()
   return allPosts.slice(0, pageSize)
-}
-
-export async function getRankedPosts(pageSize = 10): Promise<Post[]> {
-  const allPosts = await getAllPosts()
-  return allPosts
-    .filter((post) => !!post.Rank)
-    .sort((a, b) => {
-      if (a.Rank > b.Rank) {
-        return -1
-      } else if (a.Rank === b.Rank) {
-        return 0
-      }
-      return 1
-    })
-    .slice(0, pageSize)
 }
 
 export async function getPostBySlug(slug: string): Promise<Post | null> {
@@ -181,15 +234,15 @@ export async function getPostByPageId(pageId: string): Promise<Post | null> {
   return allPosts.find((post) => post.PageId === pageId) || null
 }
 
-export async function getPostsByTag(
-  tagName: string,
+export async function getPostsByCategory(
+  categoryName: string,
   pageSize = 10
 ): Promise<Post[]> {
-  if (!tagName) return []
+  if (!categoryName) return []
 
   const allPosts = await getAllPosts()
   return allPosts
-    .filter((post) => post.Tags.find((tag) => tag.name === tagName))
+    .filter((post) => post.Category?.name === categoryName)
     .slice(0, pageSize)
 }
 
@@ -208,8 +261,8 @@ export async function getPostsByPage(page: number): Promise<Post[]> {
 }
 
 // page starts from 1 not 0
-export async function getPostsByTagAndPage(
-  tagName: string,
+export async function getPostsByCategoryAndPage(
+  categoryName: string,
   page: number
 ): Promise<Post[]> {
   if (page < 1) {
@@ -217,8 +270,8 @@ export async function getPostsByTagAndPage(
   }
 
   const allPosts = await getAllPosts()
-  const posts = allPosts.filter((post) =>
-    post.Tags.find((tag) => tag.name === tagName)
+  const posts = allPosts.filter(
+    (post) => post.Category?.name === categoryName
   )
 
   const startIndex = (page - 1) * NUMBER_OF_POSTS_PER_PAGE
@@ -235,10 +288,12 @@ export async function getNumberOfPages(): Promise<number> {
   )
 }
 
-export async function getNumberOfPagesByTag(tagName: string): Promise<number> {
+export async function getNumberOfPagesByCategory(
+  categoryName: string
+): Promise<number> {
   const allPosts = await getAllPosts()
-  const posts = allPosts.filter((post) =>
-    post.Tags.find((tag) => tag.name === tagName)
+  const posts = allPosts.filter(
+    (post) => post.Category?.name === categoryName
   )
   return (
     Math.floor(posts.length / NUMBER_OF_POSTS_PER_PAGE) +
@@ -247,6 +302,13 @@ export async function getNumberOfPagesByTag(tagName: string): Promise<number> {
 }
 
 export async function getAllBlocksByBlockId(blockId: string): Promise<Block[]> {
+  const cachedBlocks = blocksCache.get(blockId)
+  if (cachedBlocks) {
+    const refreshedBlocks = await refreshExpiredFileBlocks(cachedBlocks)
+    blocksCache.set(blockId, refreshedBlocks)
+    return refreshedBlocks
+  }
+
   let results: responses.BlockObject[] = []
 
   if (fs.existsSync(`tmp/${blockId}.json`)) {
@@ -287,7 +349,9 @@ export async function getAllBlocksByBlockId(blockId: string): Promise<Block[]> {
     }
   }
 
-  const allBlocks = results.map((blockObject) => _buildBlock(blockObject))
+  const allBlocks = await refreshExpiredFileBlocks(
+    results.map((blockObject) => _buildBlock(blockObject))
+  )
 
   for (let i = 0; i < allBlocks.length; i++) {
     const block = allBlocks[i]
@@ -345,6 +409,7 @@ export async function getAllBlocksByBlockId(blockId: string): Promise<Block[]> {
     }
   }
 
+  blocksCache.set(blockId, allBlocks)
   return allBlocks
 }
 
@@ -376,16 +441,17 @@ export async function getBlock(blockId: string): Promise<Block> {
   return _buildBlock(res)
 }
 
-export async function getAllTags(): Promise<SelectProperty[]> {
+export async function getAllCategories(): Promise<SelectProperty[]> {
   const allPosts = await getAllPosts()
 
-  const tagNames: string[] = []
+  const categoryNames: string[] = []
   return allPosts
-    .flatMap((post) => post.Tags)
-    .reduce((acc, tag) => {
-      if (!tagNames.includes(tag.name)) {
-        acc.push(tag)
-        tagNames.push(tag.name)
+    .map((post) => post.Category)
+    .filter((category): category is SelectProperty => category !== null)
+    .reduce((acc, category) => {
+      if (!categoryNames.includes(category.name)) {
+        acc.push(category)
+        categoryNames.push(category.name)
       }
       return acc
     }, [] as SelectProperty[])
@@ -394,17 +460,15 @@ export async function getAllTags(): Promise<SelectProperty[]> {
     )
 }
 
-export async function downloadFile(url: URL) {
+export async function downloadFile(url: URL): Promise<void> {
   const controller = new AbortController()
   const timeoutId = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS)
 
-  let res!: Response
   try {
-    res = await fetch(url.toString(), {
+    const res = await fetch(url.toString(), {
       method: 'GET',
       signal: controller.signal,
     })
-    clearTimeout(timeoutId)
 
     if (!res.ok) {
       throw new Error(`HTTP error! status: ${res.status}`)
@@ -413,33 +477,27 @@ export async function downloadFile(url: URL) {
     if (!res.body) {
       throw new Error('Response body is null')
     }
-  } catch (err) {
-    console.log(err)
-    return Promise.resolve()
-  }
+    const dir = './public/notion/' + url.pathname.split('/').slice(-2)[0]
+    if (!fs.existsSync(dir)) {
+      fs.mkdirSync(dir, { recursive: true })
+    }
 
-  const dir = './public/notion/' + url.pathname.split('/').slice(-2)[0]
-  if (!fs.existsSync(dir)) {
-    fs.mkdirSync(dir, { recursive: true })
-  }
+    const filename = decodeURIComponent(url.pathname.split('/').slice(-1)[0])
+    const filepath = `${dir}/${filename}`
+    const writeStream = createWriteStream(filepath)
+    const rotate = sharp().rotate()
 
-  const filename = decodeURIComponent(url.pathname.split('/').slice(-1)[0])
-  const filepath = `${dir}/${filename}`
+    let stream = Readable.fromWeb(res.body as any) // eslint-disable-line @typescript-eslint/no-explicit-any
 
-  const writeStream = createWriteStream(filepath)
-  const rotate = sharp().rotate()
+    if (res.headers.get('content-type')?.startsWith('image/jpeg')) {
+      stream = stream.pipe(rotate)
+    }
 
-  let stream = Readable.fromWeb(res.body as any) // eslint-disable-line @typescript-eslint/no-explicit-any
-
-  if (res.headers.get('content-type') === 'image/jpeg') {
-    stream = stream.pipe(rotate)
-  }
-  try {
-    return pipeline(stream, new ExifTransformer(), writeStream)
-  } catch (err) {
-    console.log(err)
-    writeStream.end()
-    return Promise.resolve()
+    await pipeline(stream, new ExifTransformer(), writeStream)
+  } catch {
+    return
+  } finally {
+    clearTimeout(timeoutId)
   }
 }
 
@@ -499,9 +557,19 @@ export async function getDatabase(): Promise<Database> {
 
   let cover: FileObject | null = null
   if (dataSource.cover) {
-    cover = {
-      Type: dataSource.cover.type,
-      Url: dataSource.cover.external?.url || dataSource.cover?.file?.url || '',
+    if (
+      dataSource.cover.type === 'external' &&
+      'external' in dataSource.cover
+    ) {
+      cover = {
+        Type: 'external',
+        Url: dataSource.cover.external?.url || '',
+      }
+    } else if (dataSource.cover.type === 'file' && 'file' in dataSource.cover) {
+      cover = {
+        Type: 'file',
+        Url: dataSource.cover.file?.url || '',
+      }
     }
   }
 
@@ -974,15 +1042,46 @@ async function _getSyncedBlockChildren(block: Block): Promise<Block[]> {
 function _validPageObject(pageObject: responses.PageObject): boolean {
   const prop = pageObject.properties
   return (
-    !!prop.Page.title &&
-    prop.Page.title.length > 0 &&
-    !!prop.Slug.rich_text &&
-    prop.Slug.rich_text.length > 0 &&
-    !!prop.Date.date
+    !!prop['タイトル']?.title &&
+    prop['タイトル'].title.length > 0 &&
+    prop.Status?.status?.name === '公開' &&
+    !!prop['公開日']?.date
   )
 }
 
-function _buildPost(pageObject: responses.PageObject): Post {
+function _buildFileObject(
+  fileObject:
+    | {
+        type: string
+        external?: { url: string }
+        file?: { url: string; expiry_time: string }
+      }
+    | null
+    | undefined
+): FileObject | null {
+  if (!fileObject) {
+    return null
+  }
+
+  if (fileObject.type === 'external' && fileObject.external) {
+    return {
+      Type: 'external',
+      Url: fileObject.external.url,
+    }
+  }
+
+  if (fileObject.type === 'file' && fileObject.file) {
+    return {
+      Type: 'file',
+      Url: fileObject.file.url,
+      ExpiryTime: fileObject.file.expiry_time,
+    }
+  }
+
+  return null
+}
+
+function _buildPost(pageObject: responses.PageObject, blocks: Block[]): Post {
   const prop = pageObject.properties
 
   let icon: FileObject | Emoji | null = null
@@ -1003,48 +1102,24 @@ function _buildPost(pageObject: responses.PageObject): Post {
     }
   }
 
-  let cover: FileObject | null = null
-  if (pageObject.cover) {
-    cover = {
-      Type: pageObject.cover.type,
-      Url: pageObject.cover.external?.url || '',
-    }
-  }
-
-  let featuredImage: FileObject | null = null
-  if (prop.FeaturedImage.files && prop.FeaturedImage.files.length > 0) {
-    if (prop.FeaturedImage.files[0].external) {
-      featuredImage = {
-        Type: prop.FeaturedImage.type,
-        Url: prop.FeaturedImage.files[0].external.url,
-      }
-    } else if (prop.FeaturedImage.files[0].file) {
-      featuredImage = {
-        Type: prop.FeaturedImage.type,
-        Url: prop.FeaturedImage.files[0].file.url,
-        ExpiryTime: prop.FeaturedImage.files[0].file.expiry_time,
-      }
-    }
-  }
+  const cover = _buildFileObject(pageObject.cover)
 
   const post: Post = {
     PageId: pageObject.id,
-    Title: prop.Page.title
-      ? prop.Page.title.map((richText) => richText.plain_text).join('')
+    Title: prop['タイトル']?.title
+      ? prop['タイトル'].title.map((richText) => richText.plain_text).join('')
       : '',
     Icon: icon,
-    Cover: cover,
-    Slug: prop.Slug.rich_text
-      ? prop.Slug.rich_text.map((richText) => richText.plain_text).join('')
-      : '',
-    Date: prop.Date.date ? prop.Date.date.start : '',
-    Tags: prop.Tags.multi_select ? prop.Tags.multi_select : [],
-    Excerpt:
-      prop.Excerpt.rich_text && prop.Excerpt.rich_text.length > 0
-        ? prop.Excerpt.rich_text.map((richText) => richText.plain_text).join('')
+    Slug: getPostSlug(
+      prop['タイトル']?.title
+        ? prop['タイトル'].title.map((richText) => richText.plain_text).join('')
         : '',
-    FeaturedImage: featuredImage,
-    Rank: prop.Rank.number ? prop.Rank.number : 0,
+      pageObject.id
+    ),
+    Date: prop['公開日']?.date ? prop['公開日'].date.start : '',
+    Category: prop['カテゴリ']?.select || null,
+    Summary: getPostSummary(blocks),
+    RepresentativeImage: getRepresentativeImage(cover, blocks),
   }
 
   return post

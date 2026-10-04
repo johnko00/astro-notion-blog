@@ -1,0 +1,71 @@
+---
+import {
+  getAllCategories,
+  getPostsByCategoryAndPage,
+  getNumberOfPagesByCategory,
+} from '../../../../../lib/notion/client.ts'
+import Layout from '../../../../../layouts/Layout.astro'
+import NoContents from '../../../../../components/NoContents.astro'
+import PostCard from '../../../../../components/PostCard.astro'
+import Pagination from '../../../../../components/Pagination.astro'
+import styles from '../../../../../styles/blog.module.css'
+
+export async function getStaticPaths() {
+  const params = []
+  const categories = await getAllCategories()
+
+  await Promise.all(
+    categories.map(({ name: category }) => {
+      return getNumberOfPagesByCategory(category).then((numberOfPages) => {
+        for (let i = 2; i <= numberOfPages; i++) {
+          params.push({
+            params: { category, page: i.toString() },
+          })
+        }
+      })
+    })
+  )
+
+  return params
+}
+
+const { category, page } = Astro.params
+
+const [posts, numberOfPages] = await Promise.all([
+  getPostsByCategoryAndPage(category, parseInt(page, 10)),
+  getNumberOfPagesByCategory(category),
+])
+
+---
+
+<Layout
+  title={`Posts in ${category} ${page}/${numberOfPages}`}
+  path={`/posts/category/${category}/page/${page}`}
+>
+  <div slot="main" class={styles.archive}>
+    <header class={styles['archive-header']}>
+      <p class={styles['archive-kicker']}>Category · {page}/{numberOfPages}</p>
+      <h1>{category}</h1>
+    </header>
+
+    {
+      posts.length === 0 ? (
+        <NoContents contents={posts} />
+      ) : (
+        <div class={styles['post-grid']}>
+          {posts.map((post) => <PostCard post={post} variant="card" />)}
+        </div>
+      )
+    }
+
+    {numberOfPages > 1 && (
+      <footer>
+        <Pagination
+          category={category}
+          currentPage={parseInt(page, 10)}
+          numberOfPages={numberOfPages}
+        />
+      </footer>
+    )}
+  </div>
+</Layout>

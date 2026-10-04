@@ -133,18 +133,21 @@ export const getPostLink = (slug: string) => {
   return pathJoin(BASE_PATH, `/posts/${slug}`)
 }
 
-export const getTagLink = (tag: string) => {
-  return pathJoin(BASE_PATH, `/posts/tag/${encodeURIComponent(tag)}`)
+export const getCategoryLink = (category: string) => {
+  return pathJoin(
+    BASE_PATH,
+    `/posts/category/${encodeURIComponent(category)}`
+  )
 }
 
-export const getPageLink = (page: number, tag: string) => {
+export const getPageLink = (page: number, category: string) => {
   if (page === 1) {
-    return tag ? getTagLink(tag) : pathJoin(BASE_PATH, '/')
+    return category ? getCategoryLink(category) : pathJoin(BASE_PATH, '/')
   }
-  return tag
+  return category
     ? pathJoin(
         BASE_PATH,
-        `/posts/tag/${encodeURIComponent(tag)}/page/${page.toString()}`
+        `/posts/category/${encodeURIComponent(category)}/page/${page.toString()}`
       )
     : pathJoin(BASE_PATH, `/posts/page/${page.toString()}`)
 }

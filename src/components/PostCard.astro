@@ -1,0 +1,219 @@
+---
+import type { Post } from '../lib/interfaces.ts'
+import { getPostLink } from '../lib/blog-helpers.ts'
+import PostCategory from './PostCategory.astro'
+import PostDate from './PostDate.astro'
+import PostExcerpt from './PostExcerpt.astro'
+import PostFeaturedImage from './PostFeaturedImage.astro'
+import PostTitle from './PostTitle.astro'
+
+export interface Props {
+  post: Post
+  variant?: 'card' | 'list'
+  fallbackImage?: string
+}
+
+const { post, variant = 'card', fallbackImage = '' } = Astro.props
+const hasImage = Boolean(post.RepresentativeImage?.Url || fallbackImage)
+const postLink = getPostLink(post.Slug)
+---
+
+<article
+  class:list={[
+    'post-card',
+    `post-card--${variant}`,
+    { 'post-card--has-image': hasImage },
+  ]}
+  data-post-href={postLink}
+  role="link"
+  tabindex="0"
+  aria-label={post.Title}
+>
+  <div class="post-card-content">
+    <PostFeaturedImage post={post} fallbackImage={fallbackImage} />
+    <div class="post-card-body">
+      <PostTitle post={post} enableLink={true} />
+      <div class="post-card-meta">
+        <PostDate post={post} />
+        {variant === 'list' && <PostCategory post={post} enableLink={true} />}
+      </div>
+      {variant === 'list' && <PostExcerpt post={post} />}
+    </div>
+  </div>
+</article>
+
+<style>
+  .post-card {
+    display: flex;
+    height: 100%;
+    min-width: 0;
+    border: 0;
+    border-radius: 16px;
+    background: #fffefa;
+    box-shadow: 0 8px 24px rgba(77, 68, 54, 0.07);
+    cursor: pointer;
+    overflow: hidden;
+    transition: transform 160ms ease, box-shadow 160ms ease;
+  }
+
+  .post-card:hover {
+    box-shadow: 0 10px 28px rgba(77, 68, 54, 0.1);
+    transform: translateY(-2px);
+  }
+
+  .post-card:focus-visible {
+    outline: 2px solid rgba(201, 192, 175, 0.65);
+    outline-offset: 2px;
+  }
+
+  .post-card-content {
+    display: flex;
+    width: 100%;
+    height: 100%;
+    min-width: 0;
+    flex-direction: column;
+  }
+
+  .post-card--has-image :global(.post-featured-image) {
+    border: 0;
+    border-radius: 0;
+  }
+
+  .post-card--list .post-card-content {
+    display: grid;
+    grid-template-columns: 180px minmax(0, 1fr);
+  }
+
+  .post-card--list:not(.post-card--has-image) .post-card-content {
+    display: block;
+  }
+
+  .post-card-body {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    min-width: 0;
+    align-items: center;
+    padding: 1.35rem 1.35rem 1.45rem;
+  }
+
+  .post-card:not(.post-card--has-image) {
+    min-height: 190px;
+  }
+
+  .post-card:not(.post-card--has-image) .post-card-content {
+    min-height: 190px;
+    justify-content: center;
+  }
+
+  .post-card:not(.post-card--has-image) .post-card-body {
+    justify-content: center;
+  }
+
+  .post-card-meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 0.35rem 0.55rem;
+    margin-top: 0.7rem;
+    text-align: center;
+  }
+
+  .post-card :global(.post-date) {
+    padding: 0;
+    color: var(--muted-light);
+    font-size: 0.72rem;
+    font-weight: 400;
+    letter-spacing: 0.04em;
+  }
+
+  .post-card :global(.post-category) {
+    font-size: 0.76rem;
+  }
+
+  .post-card :global(.post-category a),
+  .post-card :global(.post-category span) {
+    padding: 0.22rem 0.5rem;
+    border-radius: 999px;
+    background: var(--category-bg);
+  }
+
+  .post-card :global(.post-title) {
+    padding: 0;
+    color: var(--fg);
+    font-size: 1.12rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    line-height: 1.55;
+    text-align: center;
+  }
+
+  .post-card :global(.post-title a) {
+    font-size: inherit;
+  }
+
+  .post-card :global(.post-excerpt) {
+    padding: 0.35rem 0 0;
+  }
+
+  .post-card :global(.post-excerpt p) {
+    display: -webkit-box;
+    overflow: hidden;
+    color: var(--muted);
+    font-size: 0.88rem;
+    line-height: 1.75;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 3;
+  }
+
+  @media (max-width: 640px) {
+    .post-card--list .post-card-content {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .post-card-body {
+      padding: 1.15rem 1.2rem 1.25rem;
+    }
+
+    .post-card:not(.post-card--has-image),
+    .post-card:not(.post-card--has-image) .post-card-content {
+      min-height: 175px;
+    }
+
+    .post-card :global(.post-title) {
+      font-size: 1.12rem;
+    }
+  }
+</style>
+
+<script>
+  const bindPostCards = () => {
+    document.querySelectorAll('.post-card[data-post-href]').forEach((card) => {
+      if (card.hasAttribute('data-post-card-bound')) return
+
+      card.setAttribute('data-post-card-bound', '')
+      const href = card.getAttribute('data-post-href')
+      if (!href) return
+
+      card.addEventListener('click', (event) => {
+        if (event.target instanceof Element && event.target.closest('a, button')) {
+          return
+        }
+        window.location.href = href
+      })
+
+      card.addEventListener('keydown', (event) => {
+        if (event.target !== card || (event.key !== 'Enter' && event.key !== ' ')) {
+          return
+        }
+        event.preventDefault()
+        window.location.href = href
+      })
+    })
+  }
+
+  bindPostCards()
+  document.addEventListener('astro:page-load', bindPostCards)
+</script>
