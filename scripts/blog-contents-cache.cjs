@@ -8,6 +8,23 @@ const notion = new Client({
   notionVersion: '2026-03-11',
 });
 
+const getCurrentJapanDate = () => {
+  const parts = new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'Asia/Tokyo',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  }).formatToParts(new Date());
+
+  const values = Object.fromEntries(
+    parts
+      .filter(({ type }) => type !== 'literal')
+      .map(({ type, value }) => [type, value])
+  );
+
+  return `${values.year}-${values.month}-${values.day}`;
+};
+
 const getAllPages = async () => {
   const dbResponse = await notion.databases.retrieve({
     database_id: process.env.DATABASE_ID,
@@ -37,7 +54,7 @@ const getAllPages = async () => {
         {
           property: '公開日',
           date: {
-            on_or_before: new Date().toISOString(),
+            on_or_before: getCurrentJapanDate(),
           },
         },
       ],
